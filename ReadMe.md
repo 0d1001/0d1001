@@ -7,7 +7,7 @@
 
 <p align="center">
   <code style="background:#0D0D0D;padding:6px 14px;border-radius:20px;border:1px solid #00FF88;color:#00FF88;font-family:monospace;font-size:13px;">
-    STATUS:ONLINE  ◆  MODE:DEV  ◆  VISITORS:<img src="https://komarev.com/ghpvc/?username=0d1001&color=00FF88&style=flat-square&label=&base=1000" style="display:inline-block;vertical-align:middle;margin-left:4px;" />
+    VISITORS:<img src="https://komarev.com/ghpvc/?username=0d1001&color=00FF88&style=flat-square&label=&base=1000" style="display:inline-block;vertical-align:middle;margin-left:4px;" />
   </code>
 </p>
 
