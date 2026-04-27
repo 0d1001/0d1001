@@ -17,7 +17,7 @@ jobs:
       - name: Update timestamp in README
         run: |
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          sed -i "s/?v=[0-9]*/?v=$TIMESTAMP/g" README.md
+          sed -i "s/\?v=[0-9]*/?v=$TIMESTAMP/g" README.md
           
       - name: Commit and push
         run: |
