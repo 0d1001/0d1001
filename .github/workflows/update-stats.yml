@@ -8,21 +8,41 @@ on:
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
+
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       
+      - name: List files for debugging
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Files in root:"
+          ls -la
+          echo "Searching for README:"
+          find . -maxdepth 2 -iname "readme.md" -type f
+      
       - name: Update timestamp in README
         run: |
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           sed -i "s/\?v=[0-9]*/?v=$TIMESTAMP/g" README.md
+          if [ -f "README.md" ]; then
+            sed -i "s/?v=[0-9]*/?v=$TIMESTAMP/g" README.md
+          elif [ -f "readme.md" ]; then
+            sed -i "s/?v=[0-9]*/?v=$TIMESTAMP/g" readme.md
+          else
+            echo "ERROR: No README.md or readme.md found!"
+            exit 1
+          fi
           
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add README.md
+          git add README.md readme.md 2>/dev/null || true
           git diff --cached --quiet || git commit -m "chore: update stats [skip ci]"
           git push
