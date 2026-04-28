@@ -1,28 +1,35 @@
-name: Update README Stats
+name: Auto Increment Version
 
 on:
-  schedule:
-    - cron: '0 * * * *'
+  push:
+    branches: [ main, master ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  update:
+  increment:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
     steps:
       - uses: actions/checkout@v4
       
-      - name: Update timestamp in README
+      - name: Increment number in .txt
         run: |
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          sed -i "s/\?v=[0-9]*/?v=$TIMESTAMP/g" README.md
-          
-      - name: Commit and push
+          if grep -q 'v=' version.txt; then
+            CURRENT=$(grep -oP 'v=\K\d+' version.txt)
+            NEW=$((CURRENT + 1))
+            sed -i "s/v=$CURRENT/v=$NEW/" version.txt
+            echo "✅ Updated from $CURRENT to $NEW"
+          else
+            echo "❌ No 'v=' pattern found"
+            exit 1
+          fi
+      
+      - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git diff --cached --quiet || git commit -m "chore: update stats [skip ci]"
+          git add version.txt
+          git commit -m "Increment version to v=$NEW [skip ci]" || echo "No changes"
           git push
