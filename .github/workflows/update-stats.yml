@@ -1,29 +1,33 @@
-name: Update Stats
+name: Update version in README
 
-on:
-  schedule:
-    - cron: '0 * * * *'  
-  workflow_dispatch:
-
-jobs:
-  update-timestamp:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+run: |
+  echo "=== Debug: Checking README.md ==="
+  cat README.md
+  echo "================================"
     
-    steps:
-      - uses: actions/checkout@v4
+  if grep -q 'v=' README.md; then
+    echo "Found 'v=' pattern"
+    grep 'v=' README.md
       
-      - name: Update last modified date
-        run: |
-          DATE=$(date +'%Y-%m-%d %H:%M:%S UTC')
-          sed -i "s/Last updated:.*/Last updated: $DATE/" README.md
-          echo "Updated to: $DATE"
+    CURRENT=$(grep -oP 'v=\K\d+' README.md | head -1 | sed 's/[^0-9]//g')
       
-      - name: Commit
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add README.md
-          git commit -m "Update last modified timestamp [skip ci]" || echo "No changes"
-          git push
+    echo "Extracted number: '$CURRENT'"
+      
+    if [[ -n "$CURRENT" && "$CURRENT" =~ ^[0-9]+$ ]]; then
+      NEW=$((CURRENT + 1))
+      echo "New number: $NEW"
+        
+      sed -i 's/v=[0-9]*/v='"$NEW"'/' README.md
+        
+      echo "✅ Updated from $CURRENT to $NEW"
+        
+      echo "=== Updated README.md ==="
+      grep 'v=' README.md
+    else
+      echo "❌ Error: Extracted number is invalid: '$CURRENT'"
+      exit 1
+    fi
+  else
+    echo "❌ No 'v=' pattern found in README.md"
+    exit 1
+  fi
