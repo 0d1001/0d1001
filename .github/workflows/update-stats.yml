@@ -1,12 +1,12 @@
-name: Auto Increment Version
+name: Update Last Modified
 
 on:
-  push:
-    branches: [ main, master ]
+  schedule:
+    - cron: '0 * * * *'  # каждые 6 часов
   workflow_dispatch:
 
 jobs:
-  increment:
+  update-timestamp:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -14,22 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Increment number in .md
+      - name: Update last modified date
         run: |
-          if grep -q 'v=' README.md; then
-            CURRENT=$(grep -oP 'v=\K\d+' README.md)
-            NEW=$((CURRENT + 1))
-            sed -i "s/v=$CURRENT/v=$NEW/" README.md
-            echo "✅ Updated from $CURRENT to $NEW"
-          else
-            echo "❌ No 'v=' pattern found"
-            exit 1
-          fi
+          DATE=$(date +'%Y-%m-%d %H:%M:%S UTC')
+          sed -i "s/Last updated:.*/Last updated: $DATE/" README.md
+          echo "Updated to: $DATE"
       
       - name: Commit
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add version.txt
-          git commit -m "Increment version to v=$NEW [skip ci]" || echo "No changes"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add README.md
+          git commit -m "Update last modified timestamp [skip ci]" || echo "No changes"
           git push
