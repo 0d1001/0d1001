@@ -1,33 +1,38 @@
-name: Update version in README
+name: Update README Version
 
-run: |
-  echo "=== Debug: Checking README.md ==="
-  cat README.md
-  echo "================================"
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
-  if grep -q 'v=' README.md; then
-    echo "Found 'v=' pattern"
-    grep 'v=' README.md
+    steps:
+      - uses: actions/checkout@v4
       
-    CURRENT=$(grep -oP 'v=\K\d+' README.md | head -1 | sed 's/[^0-9]//g')
+      - name: Increment version in README
+        run: |
+          CURRENT=$(grep -oP 'v=\K\d+' README.md | head -1 | tr -d '[:space:]')
+          
+          if [[ -z "$CURRENT" ]]; then
+            echo "❌ No version number found in pattern 'v='"
+            exit 1
+          fi
+          
+          NEW=$((CURRENT + 1))
+          
+          sed -i "s/v=[0-9]\+/v=$NEW/" README.md
+          
+          echo "✅ v=$CURRENT → v=$NEW"
       
-    echo "Extracted number: '$CURRENT'"
-      
-    if [[ -n "$CURRENT" && "$CURRENT" =~ ^[0-9]+$ ]]; then
-      NEW=$((CURRENT + 1))
-      echo "New number: $NEW"
-        
-      sed -i 's/v=[0-9]*/v='"$NEW"'/' README.md
-        
-      echo "✅ Updated from $CURRENT to $NEW"
-        
-      echo "=== Updated README.md ==="
-      grep 'v=' README.md
-    else
-      echo "❌ Error: Extracted number is invalid: '$CURRENT'"
-      exit 1
-    fi
-  else
-    echo "❌ No 'v=' pattern found in README.md"
-    exit 1
-  fi
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "Bump version to v=$NEW [skip ci]"
+          git push
