@@ -14,12 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Increment number in .txt
+      - name: Increment number in .md
         run: |
-          if grep -q 'v=' version.txt; then
-            CURRENT=$(grep -oP 'v=\K\d+' version.txt)
+          if grep -q 'v=' README.md; then
+            CURRENT=$(grep -oP 'v=\K\d+' README.md)
             NEW=$((CURRENT + 1))
-            sed -i "s/v=$CURRENT/v=$NEW/" version.txt
+            sed -i "s/v=$CURRENT/v=$NEW/" README.md
             echo "✅ Updated from $CURRENT to $NEW"
           else
             echo "❌ No 'v=' pattern found"
